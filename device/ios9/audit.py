@@ -97,8 +97,8 @@ def load_commands(output):
 
 def imports(output):
     names = output.splitlines()
-    require(all(re.fullmatch(r'_[A-Za-z0-9_.$]+', name) for name in names),
-            'nm returned an unexpected import format')
+    malformed = [name for name in names if re.fullmatch(r'_[A-Za-z0-9_.$]+', name) is None]
+    require(not malformed, 'nm returned an unexpected import format: ' + repr(malformed[:3])[:400])
     require(len(names) == len(set(names)), 'Duplicate undefined import names')
     extra = set(names) - EXPECTED_IMPORTS
     require(not extra, 'Unexpected imports: ' + ', '.join(sorted(extra)))
