@@ -39,8 +39,13 @@ A later private prototype passed the native forced read-only HFS scan and
 owned-image eject on 13G36. Its corrected descriptor lifecycle passed a full
 repeat with a fresh 192 MiB copy and an unchanged complete-image hash.
 The [validation record](validation.md#p105-native-hfs-read-only-cycle) records
-the initial busy-eject failure and the qualified correction. Mounted extent
-queries and shrinking form the next isolated-image gate.
+the initial busy-eject failure and the qualified correction. A subsequent
+read-only mount cycle also passed native extent queries over the full four-MiB
+sentinel, normal unmount, filesystem checking and eject. One native image
+shrink from 192 MiB to 96 MiB then passed relocation and filesystem checks,
+followed by fresh backup restoration to the original size. The changed work
+image remained intact. The validation record states the measured scope;
+durable stop cases and the LwVM provider remain open.
 
 ## Linux storage and boot
 

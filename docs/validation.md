@@ -132,8 +132,67 @@ calls mocked. Its actual ARMv7 audit retained 93 imports, three system
 libraries, minimum iOS 9.0 and zero lazy-binding entries. Root-controlled
 runtime receipts separately establish the measured device result.
 
-Native iOS HFS shrinking and LwVM writes remain unqualified. The next image
-experiment needs mounted extent evidence and independent restore checks.
+## P105 read-only mounted extents
+
+The next private ARMv7 build passed a complete read-only mount cycle using a
+fresh work copy of the same 192 MiB backup. A descriptor opened after mounting
+proved the owned HFS source, mount path and device number. Both its filesystem
+ID and the mount table agreed with the image's device identity.
+
+Native `F_LOG2PHYS_EXT` calls used the measured 20-byte ARMv7 structure with
+guard bytes. Sixty-seven queries covered the entire four-MiB sentinel and
+rechecked its known mapping beyond the proposed 96 MiB boundary. Every mapped
+range matched bytes from the saved image, and the complete sentinel hash
+stayed unchanged.
+
+All mounted HFS descriptors closed before normal unmount. The forced native
+read-only filesystem scan then passed, followed by a fresh owned eject.
+The original media remained present. Both complete image hashes matched the
+original backup, and the controller client closed successfully.
+
+The native mount program printed a re-key environment-check diagnostic while
+returning success. Typed read-only mount and full data checks qualified this
+unencrypted test image. Content-protected Data requires its own result.
+The build passed 397 host checks with native operations mocked; its ARMv7
+audit recorded 96 imports and zero lazy-binding entries.
+
+## P105 native image shrink and restoration
+
+A separate private ARMv7 helper issued one native shrink request on a fresh
+writable image. The filesystem changed from 192 MiB to 96 MiB while the
+virtual medium retained its original size. All four MiB of the sentinel moved
+from beyond the proposed boundary to ranges below it, with its original
+content hash. The mounted extent queries covered the file before and after
+the request. Normal unmount, forced native read-only checking and owned eject
+all passed.
+
+The changed image was copied to the Mac with its detached native hash intact.
+The Swift inspector and independent reads matched the primary header, the
+new filesystem-end alternate and the retained medium-end alternate. Each
+reported HFSX version 5, 4,096-byte allocation blocks and 24,576 blocks.
+Sixty-four recorded relocated ranges reproduced the complete sentinel hash
+from the host copy. A read-only attachment also passed the Mac filesystem
+checker and retained its full image hash after detachment.
+
+The host initially expected an earlier stdout marker and refused completion.
+The native run had already passed every journal field and returned success.
+The corrected host check finalized those saved receipts through read-only
+file transfers, with zero additional native helper invocations. Four captured
+protocol checks cover acceptance of that actual output and refusal of missing
+proof or a failed resize.
+
+A fresh restoration then copied the original protected backup into another
+image. Its full hash matched the original 192 MiB input. Native read-only
+mount, original extent mapping, filesystem checking and owned eject passed.
+Readback afterward confirmed that the changed 96 MiB work image and its
+manifest and journal retained their hashes.
+
+The shrink build passed 2,494 host checks with resize and storage calls mocked.
+The restore build passed 6,561 such checks. Their actual ARMv7 import audits
+and signed launch gates passed separately from the device experiments.
+This measured case covers the unencrypted disposable image. Native durable
+stop cases, content-protected physical volumes and LwVM writes need further
+qualification. Kernel power loss during an in-flight resize remains untested.
 Private owner inputs, device captures and generated disk images stay outside
 this repository. The published iOS command continues to supply passive
 inventory while active prototypes undergo these tests.
