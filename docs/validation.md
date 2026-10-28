@@ -84,6 +84,27 @@ were removed. This result establishes client access for the tested build;
 image attachment and its lifetime require the next experiment. The published
 passive helper retains its narrow import set and audit policy.
 
-Native iOS image attachment and shrinking remain unqualified. LwVM writes
-and internal Linux storage require their own evidence. Private owner inputs,
-device captures and generated disk images stay outside this repository.
+## P105 isolated image lifecycle
+
+A private prototype created a new 8 MiB regular fixture and submitted one
+mode-1 selector-5 request on 13G36. The fixed-width input used 256 bytes, with
+64-bit buffer fields at offsets 8 and 16. The kernel returned success and a
+four-byte IOUnit. A fresh identifier and copied image path matched the new
+KDIURL and drive properties.
+
+The first media guard stopped before raw access because two baseline media
+needed 17 parent edges to reach the registry root. Passive inspection found
+one new whole image medium with the expected size, 512-byte blocks and
+complete ownership ancestry. A separately reviewed helper then targeted that
+existing instance using the pinned file hash and original journal. It matched
+the nonce through its retained read-only raw descriptor and issued one eject.
+
+The owned KDIURL, drive and media disappeared. Every original media ID stayed
+present, and both the full fixture hash and original journal hash matched
+afterward. The fixture and receipts remain available privately. This trial
+qualifies the measured inert-image path. Its active prototypes retain their
+research status while the published helper supplies passive inventory.
+
+Native iOS HFS filesystem checking and shrinking remain unqualified. LwVM
+writes and internal Linux storage require their own evidence. Private owner
+inputs, device captures and generated disk images stay outside this repository.
