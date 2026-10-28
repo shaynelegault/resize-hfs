@@ -86,3 +86,9 @@ measured scope and the remaining content-protected relocation work.
 An original [LwVM recovery model](docs/lwvm-update-recovery.md) adds eighteen
 saved-file tests for the traced header-pair and chunk rules. A physical
 partition update still needs native recovery and provider qualification.
+
+Native P105 [process-stop and restore checks](docs/ios9-process-stops.md)
+now cover exits before a resize request and after its successful return on
+disposable iOS HFSX images. Four protected files also passed measured
+placement beyond the proposed 40 GiB boundary and fresh-process verification.
+Their physical relocation and the LwVM commit path remain under qualification.

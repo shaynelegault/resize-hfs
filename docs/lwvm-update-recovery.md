@@ -79,3 +79,46 @@ device headers and the full private trace stay outside the repository.
 Apple's [IOStorage interface](https://github.com/apple-oss-distributions/IOStorageFamily/blob/IOStorageFamily-191/IOStorage.h)
 and [IOMedia open handling](https://github.com/apple-oss-distributions/IOStorageFamily/blob/IOStorageFamily-191/IOMedia.cpp)
 supplied the public interface contracts used in the study.
+
+## Replay of the saved ARMv7 routines
+
+A private host harness also executed the exact saved Thumb code for the
+13G36 pair writer, fallback reader and their read/write helpers. Both CRC
+wrappers ran with the kernel's original CRC routine and table. The provider
+and descriptor lifetime calls used declared memory mocks. Executable pages
+stayed read-only, and each entry had bounded memory access and an instruction
+limit.
+
+Seventeen test methods covered 58 emulated cases and executed 3,207,552
+guest instructions. Ten cases agreed with the independently written model
+on return status, final provider bytes and requested unmap ranges. The runs
+confirmed that synchronize and unmap errors can be discarded, and that a
+fallback read can return success after repair has failed. A failed CRC
+comparison also leaves a recomputed CRC in the RAM buffer while returning
+an error, so the status must accompany those bytes.
+
+The emulator uses synthetic metadata windows. Its mocked provider cannot
+establish flash persistence or the effect of a real discard request.
+Firmware input bytes and captured device metadata remain private.
+
+## An unchanged proposal reaches the key store
+
+The saved GPT conversion path retains encrypted partition keys when the
+partition identities match. Those keys enter a pending list even when the
+sizes and attributes remain equal. With the traced effaceable-storage
+policy enabled, the commit path can write that list before calling the
+physical header-pair writer. Its envelope receives a fresh 12-byte random
+prefix. A matching geometry therefore still needs a key-store recovery
+contract.
+
+The observed unchanged map retains all 946 occupied partition chunks.
+After a successful commit, the driver still requests discard for the six
+already-free chunks, totaling 402,653,184 bytes. Pair-write failure has the
+separate first-chunk cleanup described above. The checked caller shows no
+rollback of an earlier key-store update after a later pair failure.
+
+The complete GPT conversion and key-store path still needs an executable
+fault model. Native qualification first needs a verified RAM root with
+closed System/Data descendants, followed by a bounded writer open and
+close with fresh metadata checks. The physical metadata writer remains
+unimplemented while that work proceeds.

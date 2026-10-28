@@ -75,3 +75,11 @@ cover header-pair ordering and failure cleanup. The study found a commit
 trigger through subsequent partition I/O and a dependency on closed
 descendant volumes. The next environment under qualification uses a native
 recovery RAM root. Physical update and recovery tests remain pending.
+
+The [native process-stop checks](ios9-process-stops.md) have since passed
+both completed operation boundaries, including separate recovery and fresh
+backup restoration. The protected-file cohort also passed measured
+placement beyond the proposed 40 GiB boundary and fresh-process verification.
+Its later physical relocation test remains open. Saved-code replay now
+confirms the pair writer's modeled failure branches, while the complete
+GPT/key-store commit path needs further work.

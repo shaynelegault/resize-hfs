@@ -62,3 +62,30 @@ The ABI study used Apple's versioned
 [protection-class definitions](https://github.com/apple-oss-distributions/xnu/blob/xnu-3248.60.10/bsd/sys/cprotect.h)
 and the HFS relocation source. The test helper is original project code;
 Apple implementation bytes and captured device data stay private.
+
+## Protected files beyond the proposed boundary
+
+A fresh native cohort then placed one 64 KiB file of each class beyond
+40 GiB on the unchanged Data filesystem. Each file received one
+`F_PREALLOCATE` request through the checked ARMv7 32-byte structure, using
+the volume-position hint. The helper accepted the result only after
+checking the returned allocation size, immutable request fields and
+surrounding guard bytes. Complete extent queries measured the placement.
+
+All four requests succeeded. Every file occupied one disjoint, aligned
+extent beyond 42,949,672,960 bytes and inside the original Data size.
+After writing and syncing the payloads, the helper closed and reopened
+each file. The observed class, full hash and 64 KiB allocation matched.
+A new process repeated those checks from the saved manifest and issued
+zero allocation requests. The owner had removed the temporary passcode
+before this cohort ran.
+
+The helper's host suite passed 1,465 sanitizer checks. A manifest guard
+refuses an unexpected file type, size or owner before opening the leaf;
+descriptor identity and timestamps must then match before reading. Its
+actual ARMv7 binary retained 27 imports and zero lazy-binding entries.
+
+The four payloads are now suitable sentinels for a later relocation test.
+This placement test issued no shrink request. The 40 GiB boundary remains
+a proposed test value while physical shrink and LwVM allocation undergo
+qualification.
