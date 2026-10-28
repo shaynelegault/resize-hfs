@@ -14,7 +14,7 @@ xcrun --sdk iphoneos clang -arch armv7 -miphoneos-version-min=9.0 -nostdlib \
     "$task_build_dir/capabilities.o" "$task_dir/libSystem-armv7.tbd" \
     "$task_dir/IOKit-armv7.tbd" -o "$task_build_dir/ios9-image-capabilities"
 file "$task_build_dir/ios9-image-capabilities"
-xcrun nm -u "$task_build_dir/ios9-image-capabilities" > "$task_build_dir/imports.txt"
+xcrun nm -u -j "$task_build_dir/ios9-image-capabilities" > "$task_build_dir/imports.txt"
 xcrun otool -L "$task_build_dir/ios9-image-capabilities" > "$task_build_dir/libraries.txt"
 xcrun otool -l "$task_build_dir/ios9-image-capabilities" > "$task_build_dir/load-commands.txt"
 python3 "$task_dir/audit.py" "$task_build_dir/ios9-image-capabilities" > "$task_build_dir/binary-audit.json"

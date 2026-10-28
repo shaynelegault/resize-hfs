@@ -40,6 +40,8 @@ class BinaryAudit(unittest.TestCase):
 
     def runner(self, tool, *arguments):
         self.assertEqual(Path(arguments[-1]), self.path)
+        if tool == 'nm':
+            self.assertEqual(arguments[:-1], ('-u', '-j'))
         return LOADS if tool == 'otool' else IMPORTS
 
     def test_reviewed_static_platform_and_imports_pass(self):

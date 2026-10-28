@@ -129,7 +129,7 @@ def audit_binary(path, runner=run_tool):
         loaded = load_commands(runner('otool', '-l', path))
         require(cpu['load_command_count'] == loaded.pop('load_command_count'),
                 'Mach-O header and otool command counts differ')
-        names = imports(runner('nm', '-u', path))
+        names = imports(runner('nm', '-u', '-j', path))
         require(metadata(before) == metadata(os.fstat(fd)) == metadata(path.lstat()),
                 'Helper identity changed during inspection')
         return {'schema': 1, 'kind': 'ios9-passive-helper-binary-audit',
