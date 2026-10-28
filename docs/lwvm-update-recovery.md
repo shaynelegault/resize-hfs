@@ -122,3 +122,76 @@ fault model. Native qualification first needs a verified RAM root with
 closed System/Data descendants, followed by a bounded writer open and
 close with fresh metadata checks. The physical metadata writer remains
 unimplemented while that work proceeds.
+
+## Key-store ordering fixture
+
+`lab/lwvm_recovery/key_commit_model.py` supplies a memory-only model for one
+unchanged retained-key proposal. Its fixed invented disk and partition
+identities accompany one synthetic 32-byte key. Two 12-byte prefixes
+distinguish the old and proposed logical envelopes. The AES boundary uses
+an identity mock; the model implements no encryption or native key access.
+
+Twelve tests cover missing retained keys, capacity and AES failures, then
+the key-store call's returned status. A store error has an explicit `keep`,
+`replace` or `poison` policy because its physical partial-write behavior
+remains unknown. Those failures stop the pair callback. The success path
+requires the updated key store to be visible when that callback begins.
+
+The existing regular-file pair model supplies header failures and preimage
+restoration. Tests preserve a changed key store after a failed pair update,
+and show that restoring the header preimage leaves that store unchanged.
+Another case stops after the key-store call while both headers retain
+their original bytes. A callback exception or ambiguous non-boolean result
+preserves the uncertain state and consumes the fixture's one attempt.
+
+A private mutation that moves the pair call ahead of the key-store update
+fails the ordering tests. The unmodified source passes all twelve cases;
+full Python lab discovery now passes 50 tests. Run the focused suite with:
+
+```sh
+python3 -m unittest lab.tests.test_lwvm_key_commit -v
+```
+
+The fixture retains false qualification flags for native key persistence,
+encryption and power loss. Actual store capacity/error handling and later
+header failure were also studied in saved-code replay, whose provider and
+cryptographic resources remain mocked.
+
+## Full saved-code commit and discard array
+
+The next private harness executed the saved pending-GPT commit against the
+captured unchanged proposal. It reached the native parser and reconstructed
+the complete original 4 KiB header. All 946 occupied map cells retained
+their bytes. Synthetic cpx objects supplied the retained key, and declared
+mocks handled AES and the external key store. Child-media rebuilding also
+used a checked mock.
+
+Eight cases passed 79 assertions. Capacity error, insufficient capacity,
+AES failure and a returned store error each stopped header-provider I/O.
+An unavailable retained key stopped the store as well. The injected primary
+and backup write failures occurred after the modeled key-store success;
+each reached the whole-first-chunk cleanup request. Native key loading and
+store persistence remain outside those mocks.
+
+The successful case refined the earlier free-run footprint calculation.
+The saved code initializes one 16-byte extent for the six free chunks, with
+the range described above. At the provider call it supplies an extent count
+of six. That count exposes five additional entries from its stack.
+
+The harness then executed the exact saved `IOMedia::unmap` validator and its
+`IOService::isInactive` check. In this fixture the second entry exceeds the
+64 GB medium. The validator returned `0xe00002c2` (`BadArgument`) before
+calling the driver. LwVM discarded that status and returned success. Its
+separate header-gap request supplied count one and reached the mocked
+driver.
+
+The first stopped run's 96-byte array remains preserved beside the completed
+replay. An independent run reproduced the same result after checking all
+47 input pins. It executed 9,324,927 instructions and preserved the header
+and occupied map. A different native stack can supply different extra
+entries, so physical discard effects still need qualification.
+
+This result adds a provider-array failure case to the physical update plan.
+The writer needs a complete account of that array and the key-store state
+before its first device mutation. Native writable-open admission and child
+rematching remain separate runtime tests.

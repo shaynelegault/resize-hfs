@@ -92,3 +92,7 @@ now cover exits before a resize request and after its successful return on
 disposable iOS HFSX images. Four protected files also passed measured
 placement beyond the proposed 40 GiB boundary and fresh-process verification.
 Their physical relocation and the LwVM commit path remain under qualification.
+
+The P105 [key-store ordering fixture](docs/lwvm-update-recovery.md#key-store-ordering-fixture)
+adds twelve host tests for failures before header I/O and recovery after a
+key-store change. It uses invented keys with a declared crypto mock.

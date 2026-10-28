@@ -64,3 +64,12 @@ MIT code derived from the saved 13G36 study. They use invented metadata
 windows and explicit discard policies. The [research note](lwvm-update-recovery.md)
 records component hashes and trace anchors. Native code and device captures
 remain private.
+
+## Key-store ordering model
+
+`lab/lwvm_recovery/key_commit_model.py` and its twelve tests are original
+MIT code. The model follows the traced key-store-before-header order and
+uses fixed invented identities, keys and prefixes. Its AES operation is
+an identity mock. The separate header model supplies regular-file failure
+and restoration cases; firmware bytes and native key material remain
+outside this source tree.
