@@ -1,0 +1,50 @@
+# Source and license notes
+
+The initial `ResizeCore`, three saved-file commands and 33 synthetic tests
+were written in the author's local legacy iOS storage research. A preserved
+copy supplied this standalone project on 28 October 2026. Original source
+bytes still match that copy. `source-import.json` records the public Swift
+source hashes before the MIT headers and new work were added.
+
+This repository adds a complete saved-image header check and a separate
+macOS image experiment. Its original code is licensed under MIT. System
+headers and frameworks come from the user's installed SDK and operating
+system during compilation and execution.
+
+## Format and interface references
+
+- [Apple HFS Plus Volume Format, TN1150](https://developer.apple.com/library/archive/technotes/tn/tn1150.html)
+  describes the volume headers, allocation blocks and byte order.
+- [Apple HFS format definitions](https://github.com/apple-oss-distributions/hfs/blob/main/core/hfs_format.h)
+  provide names for raw journal and content-protection flags.
+- [UEFI GPT format](https://uefi.org/specs/UEFI/2.10/05_GUID_Partition_Table_Format.html)
+  describes the standard field offsets and CRC rules. The fixture tools keep
+  the observed raw revision value 1 separate from standard revision 1.0.
+- [Apple's HFS resize implementation](https://github.com/apple-oss-distributions/hfs/blob/main/core/hfs_resize.c)
+  and [control definitions](https://github.com/apple-oss-distributions/hfs/blob/main/core/hfs_fsctl.h)
+  informed the disposable macOS experiment. These are APSL-2.0 references;
+  their source implementations are external to this repository.
+
+`lab/image_fsctl.c` computes the interface request with the installed SDK's
+`_IOW('h', 2, uint64_t)` and checks its value at compile time. It calls the
+host filesystem through `ffsctl`, then obtains extent observations through
+`F_LOG2PHYS_EXT`. The lab's own backing checks surround that call.
+
+The GPL projects [danzatt/hfs_resize](https://github.com/danzatt/hfs_resize)
+and [openiBoot](https://github.com/iDroid-Project/openiBoot) remain research
+references. Their implementations are outside this source tree. OrchardLinux's
+[MIT-licensed resize-apfs](https://github.com/OrchardLinux/resize-apfs) provided
+an example of separating core code, commands and tests; APFS implementation
+code was not imported.
+
+## Fixture model boundary
+
+The LwVM model uses caller-invented 1,024-entry maps and explicit limits. The
+original workspace's static 13G36 study informed its owner/index masks and
+exact `0xf111` marker rule. Additional model rules require unique contiguous
+indices. That fixture policy has no established equivalence to a live device
+map or the iOS partition provider's update behavior.
+
+Kernel captures and the private static-analysis trace remain outside this
+repository. The model serves arithmetic tests while live LwVM preparation
+awaits an independently qualified format and recovery procedure.

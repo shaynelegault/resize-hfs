@@ -1,0 +1,15 @@
+.build/
+.swiftpm/
+.DS_Store
+__pycache__/
+*.pyc
+.local/
+lab-results/
+*.dmg
+*.img
+*.hfs
+*.bin
+*.ipsw
+*.dylib
+*.mobileprovision
+*.entitlements

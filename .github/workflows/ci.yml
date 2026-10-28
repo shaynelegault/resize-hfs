@@ -1,0 +1,46 @@
+name: Saved-file tools
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  macos:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: swift --version && swift test -j 2
+      - run: python -m unittest discover -s lab/tests -v
+      - name: Compile the guarded macOS helper
+        run: xcrun clang -std=c11 -Wall -Wextra -Werror -O2 -framework CoreFoundation lab/image_fsctl.c -o /tmp/resize-hfs-image-helper
+      - name: Build and audit the passive iOS 9 helper
+        run: |
+          /bin/sh device/ios9/build-capabilities.sh
+          python -m unittest discover -s device/ios9 -v
+  linux-swift:
+    runs-on: ubuntu-24.04
+    container:
+      image: swift:6.0.3-jammy@sha256:95f6ef898992dc840b35517e780f6f6db9661432775ab0b33cc0a531ea749bdb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: swift --version && swift test --disable-sandbox -j 2
+  linux-python:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - run: python -m unittest discover -s lab/tests -v
+      - run: python -m unittest discover -s device/ios9 -v

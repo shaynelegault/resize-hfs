@@ -1,0 +1,84 @@
+{
+  "imported_on": "2026-10-28",
+  "original_package": "ResizeHFS",
+  "baseline_tests": 33,
+  "scope": "original saved-file inspectors and synthetic fixtures",
+  "files": {
+    "Package.swift": {
+      "sha256": "a36e0f8dfa32eda755c807077679f246fd58c6c9111af4a55b72aca77d072ecf",
+      "bytes": 821
+    },
+    "Sources/GPTHeaderInspect/main.swift": {
+      "sha256": "0e2fd3e1c7870f32e637afe36f7c07b3b9c4aa1e3906c1f5d94fce55bc906721",
+      "bytes": 1097
+    },
+    "Sources/ResizeCore/BlockRange.swift": {
+      "sha256": "0f8c7714f8067a0154797c53b8aee341d4ae8a535a7f66e6afa5505a513555bf",
+      "bytes": 847
+    },
+    "Sources/ResizeCore/FixtureResizeScenario.swift": {
+      "sha256": "897735753236f33c2fd0cf77d93e4a4a919ac5e1ee908b011c2ec631283411fe",
+      "bytes": 4019
+    },
+    "Sources/ResizeCore/GPTLikeHeader.swift": {
+      "sha256": "5b8d11309426c0bf404c275efc83d17cab5b0078203c006027c0977ad13c1180",
+      "bytes": 2263
+    },
+    "Sources/ResizeCore/HFSHeader.swift": {
+      "sha256": "47497153ed835222661efe16e65b6c6df0812c4bb3c5abe4b330adc6fb5bb60c",
+      "bytes": 2448
+    },
+    "Sources/ResizeCore/HypotheticalLwVMReconciliation.swift": {
+      "sha256": "c04c5393f7c9d0fbcab12c120dbb9edfbc8007466a54cfe5fea582403638462c",
+      "bytes": 3242
+    },
+    "Sources/ResizeCore/HypotheticalShrink.swift": {
+      "sha256": "2a15a788794b3f62358aeaf950c905fc02545c0fea45d8a5acf61fb9a2641d05",
+      "bytes": 2457
+    },
+    "Sources/ResizeCore/Revision1Snapshot.swift": {
+      "sha256": "f05c16190ae5f22b1da4eaf6ebc15602253e26c14d443d3cefcfcd7b2f449863",
+      "bytes": 6548
+    },
+    "Sources/ResizeCore/SavedFile.swift": {
+      "sha256": "934b9ae9da9d259a813c3e7609948a9003db04bcc8ac88cf583a0f1005b9028f",
+      "bytes": 4779
+    },
+    "Sources/ResizeInspect/main.swift": {
+      "sha256": "ae893804c8a22b060dc40fbccdab7d211c816ff8d560b33b8a9b0cd7de80a264",
+      "bytes": 1169
+    },
+    "Sources/Revision1FixtureInspect/main.swift": {
+      "sha256": "ea8d31ac74d153979aa83eb336dc9f4c3f8bc4be17bca69d4ee8225b1ca1511e",
+      "bytes": 2000
+    },
+    "Tests/ResizeCoreTests/BlockRangeTests.swift": {
+      "sha256": "9e8b90a8d818ac2fa67f1b769dd4abad7b8a345760978e606a4f3b32f3ef0761",
+      "bytes": 787
+    },
+    "Tests/ResizeCoreTests/FixtureResizeScenarioTests.swift": {
+      "sha256": "f81bc8de7b2739fe523389003bd4e38c11ee8d3fed5b2ba0806851b69f60a764",
+      "bytes": 5304
+    },
+    "Tests/ResizeCoreTests/GPTLikeHeaderTests.swift": {
+      "sha256": "caf33f96777fcc63ae31d7c137d39898d0b81821974b96348519b4580bbfb947",
+      "bytes": 3278
+    },
+    "Tests/ResizeCoreTests/HFSHeaderTests.swift": {
+      "sha256": "666d2f83c92d2520536559658beff06a29199bffbf4b1f473a622dbd3fcc5867",
+      "bytes": 4414
+    },
+    "Tests/ResizeCoreTests/HypotheticalLwVMReconciliationTests.swift": {
+      "sha256": "3514679b1aea0a951eca9c0786a0d6bd77a2303dd899a198078ae040063a4349",
+      "bytes": 3780
+    },
+    "Tests/ResizeCoreTests/HypotheticalShrinkTests.swift": {
+      "sha256": "f9ab19194fba2388443ef260423611d09b5961b48cc4f6c021c21a0d916541ca",
+      "bytes": 4571
+    },
+    "Tests/ResizeCoreTests/Revision1SnapshotTests.swift": {
+      "sha256": "bdcd5d4cb51b9c62e4d356913ee951d9d10781228546fddfad4fb59a220caf48",
+      "bytes": 7914
+    }
+  }
+}

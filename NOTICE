@@ -1,0 +1,11 @@
+resize-hfs contains original code from the author's legacy iOS storage
+research, carried forward into a standalone project on 28 October 2026.
+
+The source relies on Apple's public HFS Plus Volume Format documentation
+and public UEFI GPT field/checksum definitions. macOS experiments call the
+host's filesystem implementation through its system interfaces.
+
+Apple's HFS source is an APSL-2.0 research reference. danzatt/hfs_resize
+and openiBoot are GPL research references. Their implementations and Apple
+firmware are not included in this repository. Source notes record the
+boundaries of the imported Swift fixtures and their assumptions.
