@@ -25,7 +25,9 @@ an ad hoc signature with SHA-1/SHA-256 digests for the legacy target.
 
 On 28 October 2026 the probe ran on the P105 through its existing pinned iOS
 SSH route. The output reported one exact `IOHDIXController`, with the drive
-class count unavailable. The DiskImages framework, `hdiutil` and tested `hdik`
+class count initially unavailable. A second run treated a successful match
+with a null iterator as the documented empty result and reported zero exact
+`IOHDIXHDDriveInKernel` instances. The DiskImages framework, `hdiutil` and tested `hdik`
 paths were missing. `mount_hfs` and `fsck_hfs` were symlinks. The temporary
 executable and report were removed after the test.
 

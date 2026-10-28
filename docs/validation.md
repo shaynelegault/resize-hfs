@@ -50,12 +50,30 @@ leaving the mutation checkpoint unresolved.
 The stop cases test the supervising process at durable checkpoints. Kernel
 power loss during an in-flight resize remains untested.
 
+The same clean and stop/restore scenarios passed on a hosted macOS 15 runner
+in [image-lab run 40716427858](https://github.com/shaynelegault/resize-hfs/actions/runs/40716427858).
+Its uploaded artifact contains the aggregate JSON summary. Generated disk
+images remain outside the repository and workflow artifacts.
+
 ## P105 read-only result
 
 The signed passive helper ran on `iPad2,5` / `13G36` through the owner's
 verified iOS SSH connection. It reported one exact `IOHDIXController` and the
 expected ARMv7 widths. Its source and output kept user-client opens and image
 attachments outside this run. Temporary files were removed afterward.
+
+The first version categorized a successful match with a null iterator as
+unavailable. After correcting that documented empty-match case, a second
+signed run reported zero exact `IOHDIXHDDriveInKernel` instances and retained
+the same 13-name import set. Its output again recorded no client open or
+image attachment, followed by removal of its temporary files.
+
+A separately reviewed private access experiment then opened a type-0 client
+on that unique controller as root and closed it. Both calls returned success.
+It issued no external method request, and its temporary executable and report
+were removed. This result establishes client access for the tested build;
+image attachment and its lifetime require the next experiment. The published
+passive helper retains its narrow import set and audit policy.
 
 Native iOS image attachment and shrinking remain unqualified. LwVM writes
 and internal Linux storage require their own evidence. Private owner inputs,

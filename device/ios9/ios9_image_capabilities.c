@@ -50,7 +50,8 @@ static int exact_count(const char *class_name, unsigned *out)
     CFMutableDictionaryRef match = IOServiceMatching(class_name);
     unsigned checked = 0;
     *out = 0;
-    if (!match || IOServiceGetMatchingServices(0, match, &iterator) || !iterator) return 0;
+    if (!match || IOServiceGetMatchingServices(0, match, &iterator)) return 0;
+    if (!iterator) return 1;
     while ((entry = IOIteratorNext(iterator)) != 0) {
         char name[128] = {0};
         if (++checked > 64 || IOObjectGetClass(entry, name) || name[127] != 0) {
