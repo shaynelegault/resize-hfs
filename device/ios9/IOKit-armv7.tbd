@@ -4,5 +4,5 @@ targets:         [ armv7-ios ]
 install-name:    '/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit'
 exports:
   - targets:         [ armv7-ios ]
-    symbols:         [ _IOIteratorNext, _IOObjectRelease, _IOObjectGetClass, _IOServiceGetMatchingServices, _IOServiceMatching ]
+    symbols:         [ _io_iterator_next, _io_iterator_is_valid, _IOObjectRelease, _IOObjectGetClass, _IOServiceGetMatchingServices, _IOServiceMatching ]
 ...

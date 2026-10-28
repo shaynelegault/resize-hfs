@@ -21,7 +21,7 @@ EXPECTED_LIBRARIES = {
     '/System/Library/Frameworks/IOKit.framework/Versions/A/IOKit',
 }
 EXPECTED_IMPORTS = {
-    '_IOIteratorNext', '_IOObjectGetClass', '_IOObjectRelease',
+    '_io_iterator_next', '_io_iterator_is_valid', '_IOObjectGetClass', '_IOObjectRelease',
     '_IOServiceGetMatchingServices', '_IOServiceMatching',
     '___error', '___stack_chk_fail', '___stack_chk_guard',
     '_lstat', '_printf', '_puts', '_strcmp', '_sysctlbyname',

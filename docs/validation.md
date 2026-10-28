@@ -12,7 +12,8 @@ repository.
 | Current Swift suite | 40 tests passed on macOS with Swift 6.4 and Linux ARM64 with Swift 6.0.3 |
 | Image lab unit suite | 20 Python tests passed on the Mac |
 | Passive-helper audit | 13 tests passed, including an altered Mach-O with an active-I/O import that was refused |
-| Native helper | ARMv7, minimum iOS 9.0, two system libraries and 13 required imports; legacy linkers may add the reviewed lazy binder |
+| Passive counter failure paths | 19 host C cases passed with 2,233 checks against the actual source; registry functions were mocked and external registry imports were refused |
+| Native helper | ARMv7, minimum iOS 9.0, two system libraries and 14 required imports; legacy linkers may add the reviewed lazy binder |
 | Original source | Preserved copy and original working source matched before import; original files remain unchanged |
 
 Linux Swift checks used the official `swift:6.0.3-jammy` multi-architecture
@@ -67,6 +68,14 @@ unavailable. After correcting that documented empty-match case, a second
 signed run reported zero exact `IOHDIXHDDriveInKernel` instances and retained
 the same 13-name import set. Its output again recorded no client open or
 image attachment, followed by removal of its temporary files.
+
+The later signed revision preserves explicit MIG next/validity status. It
+reported one exact controller and zero drive instances, with a valid
+`kIOReturnNoDevice` result accepted as the end of iteration. Its required
+import set contains 14 names. The host counter tests exercise partial RPC
+failure, invalidation at several stages, successful null iterators, class
+failures and inspection bounds. Combined passive test discovery passes 14
+Python test entries, including the C harness runner.
 
 A separately reviewed private access experiment then opened a type-0 client
 on that unique controller as root and closed it. Both calls returned success.

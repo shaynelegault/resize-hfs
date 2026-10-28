@@ -9,10 +9,12 @@
 #include <sys/sysctl.h>
 #include "hdix_candidate_layout.h"
 
+#if !defined(RHFS_PASSIVE_HOST_TEST)
 #if !defined(__arm__) || defined(__LP64__)
 #error This capability probe is intended for ARMv7 iOS.
 #endif
 _Static_assert(sizeof(uintptr_t) == 4, "probe pointer must be ARMv7 width");
+#endif
 _Static_assert(sizeof(off_t) == 8, "probe file offsets must be 64-bit");
 
 typedef uint32_t rhfs_io_object_t;
@@ -21,7 +23,8 @@ rhfs_kern_return_t IOObjectRelease(rhfs_io_object_t);
 rhfs_kern_return_t IOObjectGetClass(rhfs_io_object_t, char *);
 CFMutableDictionaryRef IOServiceMatching(const char *);
 rhfs_kern_return_t IOServiceGetMatchingServices(uint32_t, CFDictionaryRef, rhfs_io_object_t *);
-rhfs_io_object_t IOIteratorNext(rhfs_io_object_t);
+rhfs_kern_return_t io_iterator_next(rhfs_io_object_t, rhfs_io_object_t *);
+rhfs_kern_return_t io_iterator_is_valid(rhfs_io_object_t, uint32_t *);
 
 static int target_matches(void)
 {
@@ -52,18 +55,30 @@ static int exact_count(const char *class_name, unsigned *out)
     *out = 0;
     if (!match || IOServiceGetMatchingServices(0, match, &iterator)) return 0;
     if (!iterator) return 1;
-    while ((entry = IOIteratorNext(iterator)) != 0) {
+    int complete = 0;
+    for (;;) {
+        uint32_t valid = 0;
+        entry = 0;
+        if (io_iterator_is_valid(iterator, &valid) || !valid) break;
+        rhfs_kern_return_t status = io_iterator_next(iterator, &entry);
+        if ((uint32_t)status == 0xe00002c0U && !entry) {
+            valid = 0;
+            complete = !io_iterator_is_valid(iterator, &valid) && valid;
+            break;
+        }
+        if (status || !entry) break;
         char name[128] = {0};
-        if (++checked > 64 || IOObjectGetClass(entry, name) || name[127] != 0) {
+        valid = 0;
+        if (io_iterator_is_valid(iterator, &valid) || !valid || ++checked > 64 ||
+            IOObjectGetClass(entry, name) || name[127] != 0 || !name[0]) {
             IOObjectRelease(entry);
-            IOObjectRelease(iterator);
-            return 0;
+            break;
         }
         if (!strcmp(name, class_name)) (*out)++;
         IOObjectRelease(entry);
     }
     IOObjectRelease(iterator);
-    return 1;
+    return complete;
 }
 
 int main(int argc, char **argv)
