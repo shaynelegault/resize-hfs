@@ -196,3 +196,43 @@ qualification. Kernel power loss during an in-flight resize remains untested.
 Private owner inputs, device captures and generated disk images stay outside
 this repository. The published iOS command continues to supply passive
 inventory while active prototypes undergo these tests.
+
+## P105 bounded native LwVM snapshot
+
+A separate private ARMv7 helper captured metadata through the existing native
+iOS logical media. It bound the selected P105's whole 64 GB medium, LwVM view
+and System/Data slices through their typed registry ancestry, BSD device
+numbers and 4,096-byte geometry. The device descriptors stayed read-only.
+Sixteen aligned reads requested a total of 65,536 bytes, within its 160 KiB
+budget. Private output files retained the captured ranges and their hashes.
+
+Both physical 4 KiB LwVM headers passed CRC32 and matched byte for byte.
+The second lies at byte 67,104,768 for this measured geometry. Each header,
+the virtual GPT headers and their mirrored entry arrays matched again after
+the live HFS reads. Registry identities and device geometry remained stable;
+all raw descriptors closed and registry releases passed. System and Data
+reported journaled HFSX version 5. Data also had content protection enabled.
+The mounted HFS observations retain their live scope and were never frozen
+or filesystem-checked by this snapshot.
+
+Independent host checks reproduced both physical-header checksums with
+Python zlib and the new Swift saved-header diagnostic. The existing revision-1
+fixture checker also passed both virtual headers and the mirrored logical
+entry arrays. This native view declared two 128-byte records inside each
+aligned 4 KiB capture. Separate 256-byte copies supplied the exact-array
+fixture interface; the original captures stayed intact. Their remaining
+padding was zero. The initial direct padded-file refusal remains recorded.
+
+The native helper passed 339 sanitizer-backed host checks with native calls
+mocked. Its actual ARMv7 binary had 44 imports and zero lazy-binding entries.
+The same signed artifact passed a no-argument launch on 13G36 before its one
+snapshot invocation. An earlier SSH readback failed before helper launch;
+a fresh read verified the complete uploaded binary, then resumed that launch.
+Private receipts preserve both attempts.
+
+The portable suite now passes 45 tests on macOS. Six command checks exercised
+the independently calculated fixture, a corrupt final byte and refusal of
+unsupported file types while preserving the input. Snapshot agreement covers
+the observed ranges and interval. Physical allocation semantics, durable
+LwVM updates, content-protected resizing and Linux internal storage remain
+open.

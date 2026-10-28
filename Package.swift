@@ -9,6 +9,7 @@ let package = Package(
         .executable(name: "resize-inspect", targets: ["ResizeInspect"]),
         .executable(name: "inspect-hfs-image", targets: ["HFSImageInspect"]),
         .executable(name: "inspect-gpt-header", targets: ["GPTHeaderInspect"]),
+        .executable(name: "inspect-lwvm-header", targets: ["LwVMHeaderInspect"]),
         .executable(name: "inspect-revision1-fixture", targets: ["Revision1FixtureInspect"])
     ],
     targets: [
@@ -16,6 +17,7 @@ let package = Package(
         .executableTarget(name: "ResizeInspect", dependencies: ["ResizeCore"]),
         .executableTarget(name: "HFSImageInspect", dependencies: ["ResizeCore"]),
         .executableTarget(name: "GPTHeaderInspect", dependencies: ["ResizeCore"]),
+        .executableTarget(name: "LwVMHeaderInspect", dependencies: ["ResizeCore"]),
         .executableTarget(name: "Revision1FixtureInspect", dependencies: ["ResizeCore"]),
         .testTarget(name: "ResizeCoreTests", dependencies: ["ResizeCore"])
     ]

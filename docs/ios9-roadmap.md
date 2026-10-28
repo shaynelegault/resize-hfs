@@ -47,6 +47,13 @@ followed by fresh backup restoration to the original size. The changed work
 image remained intact. The validation record states the measured scope;
 durable stop cases and the LwVM provider remain open.
 
+A bounded native read-only snapshot has since passed both physical LwVM
+header checks, repeated virtual partition tables and live HFS identity checks.
+The saved files also pass independent host checksum and geometry checks.
+See [the snapshot result](validation.md#p105-bounded-native-lwvm-snapshot).
+The raw allocation map and native update/recovery behavior still need their
+own qualification before any physical-volume change.
+
 ## Linux storage and boot
 
 The P105 Linux milestone currently uses a host-served NFS root. Its native

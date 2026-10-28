@@ -48,3 +48,11 @@ map or the iOS partition provider's update behavior.
 Kernel captures and the private static-analysis trace remain outside this
 repository. The model serves arithmetic tests while live LwVM preparation
 awaits an independently qualified format and recovery procedure.
+
+## Saved LwVM header checksum
+
+The saved-header diagnostic implements the checksum contract observed in an
+offline trace of build 13G36. [Its scope](lwvm-header.md) records the fields,
+trace anchors and component hash. The existing original CRC32 function is
+reused. New fixtures use independently computed Python zlib checksums;
+device data and Apple implementation bytes remain outside this repository.

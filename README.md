@@ -18,6 +18,7 @@ swift test -j 2
 swift run -j 2 resize-inspect /path/to/saved-volume-prefix.bin
 swift run -j 2 inspect-hfs-image /path/to/saved-raw-volume-image.hfs
 swift run -j 2 inspect-gpt-header /path/to/saved-header-block.bin 4096
+swift run -j 2 inspect-lwvm-header /path/to/saved-lwvm-header.bin
 swift run -j 2 inspect-revision1-fixture \
   primary-header.bin primary-entries.bin backup-header.bin backup-entries.bin \
   4096 MEDIA_BLOCK_COUNT
@@ -38,6 +39,11 @@ The observed LwVM-facing revision value `0x00000001` is distinct from UEFI GPT
 revision 1.0 (`0x00010000`). `inspect-revision1-fixture` checks the selected
 header geometry, CRCs, mirrored entry arrays and used ranges from four saved
 files. It emits aggregate values without partition names or GUIDs.
+
+`inspect-lwvm-header` reads one saved 4 KiB LwVM header and checks its CRC
+using the inspected iOS 9.3.5/13G36 contract. It reports the raw media size and
+partition count. The allocation map, partition entries and backup header
+remain unchecked. See [the header diagnostic](docs/lwvm-header.md).
 
 The library retains in-memory shrink geometry and LwVM reconciliation fixtures.
 Their inputs are invented maps and explicit caller-supplied bounds. Those
