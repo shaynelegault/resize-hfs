@@ -13,3 +13,4 @@ lab-results/
 *.dylib
 *.mobileprovision
 *.entitlements
+lab/lwvm_recovery/cases/

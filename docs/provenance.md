@@ -56,3 +56,11 @@ offline trace of build 13G36. [Its scope](lwvm-header.md) records the fields,
 trace anchors and component hash. The existing original CRC32 function is
 reused. New fixtures use independently computed Python zlib checksums;
 device data and Apple implementation bytes remain outside this repository.
+
+## Header-pair recovery model
+
+`lab/lwvm_recovery/saved_pair_model.py` and its eighteen tests are original
+MIT code derived from the saved 13G36 study. They use invented metadata
+windows and explicit discard policies. The [research note](lwvm-update-recovery.md)
+records component hashes and trace anchors. Native code and device captures
+remain private.

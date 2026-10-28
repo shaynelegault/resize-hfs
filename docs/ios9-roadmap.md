@@ -61,3 +61,17 @@ recovery keeps the flash controller disabled. An internal Linux area needs a
 verified allocation boundary and a block backend that can write and recover
 through the A5 storage stack. Startup without a host has its own boot-chain
 requirements. Each result needs a separate device test.
+
+## File protection and update recovery
+
+The [ordinary-file tests](ios9-content-protection.md) passed fresh-process
+verification before lock, during passcode lock and after unlock. Protected
+Data relocation remains open. The raw DiskImages backend loses the storage
+protection context, which limits the encryption evidence available from
+image-only experiments.
+
+The [native LwVM study and saved-file model](lwvm-update-recovery.md) now
+cover header-pair ordering and failure cleanup. The study found a commit
+trigger through subsequent partition I/O and a dependency on closed
+descendant volumes. The next environment under qualification uses a native
+recovery RAM root. Physical update and recovery tests remain pending.

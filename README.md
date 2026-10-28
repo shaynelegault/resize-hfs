@@ -77,3 +77,12 @@ releasing space alone cannot provide an untethered Linux boot.
 Original project code is MIT licensed. [Source notes](docs/provenance.md)
 record the imported research and external format references. Apple firmware,
 kernel captures, calibration, raw device data and credentials stay private.
+
+## P105 file protection and recovery research
+
+Native tests now record file-class access across passcode lock and unlock
+on iOS 9.3.5. [The results](docs/ios9-content-protection.md) state the
+measured scope and the remaining content-protected relocation work.
+An original [LwVM recovery model](docs/lwvm-update-recovery.md) adds eighteen
+saved-file tests for the traced header-pair and chunk rules. A physical
+partition update still needs native recovery and provider qualification.
