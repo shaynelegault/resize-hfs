@@ -35,6 +35,13 @@ The earlier 13G36 static study found a handler comparing normalized request
 they leave the complete userspace dispatch and a read-only minimum-size query
 unqualified on this target.
 
+A later private prototype passed the native forced read-only HFS scan and
+owned-image eject on 13G36. Its corrected descriptor lifecycle passed a full
+repeat with a fresh 192 MiB copy and an unchanged complete-image hash.
+The [validation record](validation.md#p105-native-hfs-read-only-cycle) records
+the initial busy-eject failure and the qualified correction. Mounted extent
+queries and shrinking form the next isolated-image gate.
+
 ## Linux storage and boot
 
 The P105 Linux milestone currently uses a host-served NFS root. Its native

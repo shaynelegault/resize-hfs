@@ -105,6 +105,35 @@ afterward. The fixture and receipts remain available privately. This trial
 qualifies the measured inert-image path. Its active prototypes retain their
 research status while the published helper supplies passive inventory.
 
-Native iOS HFS filesystem checking and shrinking remain unqualified. LwVM
-writes and internal Linux storage require their own evidence. Private owner
-inputs, device captures and generated disk images stay outside this repository.
+## P105 native HFS read-only cycle
+
+A private ARMv7 prototype prepared a fresh 192 MiB HFSX image on 13G36. The
+installed `fsck_hfs`, version `hfs-305.10.1`, completed its forced `-f -n`
+scan and reported the expected volume clean. Its log included the explicit
+`NO WRITE` marker and the full catalog, bitmap and volume checks. The child
+exited successfully and its dedicated process group ended.
+
+The first run retained its raw descriptor while the checker opened the same
+node. Eject returned `EBUSY`. Apple's legacy driver increments its open count
+for each open and resets that count at the final vnode close. A separately
+reviewed recovery then opened one fresh descriptor, rechecked the same image
+and issued one successful eject. The original run remains preserved.
+
+The corrected prototype passed a complete cycle with another fresh copy.
+After the checker finished, it closed the original raw descriptor and rebuilt
+the ownership proof around the same registry IDs and device nodes. A fresh
+descriptor matched both HFS headers and the sampled image sectors before
+eject. The owned UUID, drive and media disappeared while every original media
+ID remained present. The full image hash matched throughout, and the client
+connection closed successfully. No filesystem mount or resize occurred.
+
+The corrected build passed 335 host checks with service, child and eject
+calls mocked. Its actual ARMv7 audit retained 93 imports, three system
+libraries, minimum iOS 9.0 and zero lazy-binding entries. Root-controlled
+runtime receipts separately establish the measured device result.
+
+Native iOS HFS shrinking and LwVM writes remain unqualified. The next image
+experiment needs mounted extent evidence and independent restore checks.
+Private owner inputs, device captures and generated disk images stay outside
+this repository. The published iOS command continues to supply passive
+inventory while active prototypes undergo these tests.
