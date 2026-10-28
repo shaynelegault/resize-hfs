@@ -26,6 +26,8 @@ EXPECTED_IMPORTS = {
     '___error', '___stack_chk_fail', '___stack_chk_guard',
     '_lstat', '_printf', '_puts', '_strcmp', '_sysctlbyname',
 }
+# Legacy linkers add this libSystem entry for their lazy symbol stubs.
+OPTIONAL_LINKER_IMPORTS = {'dyld_stub_binder'}
 MAX_BYTES = 2 * 1024 * 1024
 
 
@@ -97,10 +99,11 @@ def load_commands(output):
 
 def imports(output):
     names = output.splitlines()
-    malformed = [name for name in names if re.fullmatch(r'_[A-Za-z0-9_.$]+', name) is None]
+    malformed = [name for name in names if name not in OPTIONAL_LINKER_IMPORTS and
+                 re.fullmatch(r'_[A-Za-z0-9_.$]+', name) is None]
     require(not malformed, 'nm returned an unexpected import format: ' + repr(malformed[:3])[:400])
     require(len(names) == len(set(names)), 'Duplicate undefined import names')
-    extra = set(names) - EXPECTED_IMPORTS
+    extra = set(names) - EXPECTED_IMPORTS - OPTIONAL_LINKER_IMPORTS
     require(not extra, 'Unexpected imports: ' + ', '.join(sorted(extra)))
     missing = EXPECTED_IMPORTS - set(names)
     require(not missing, 'Expected metadata imports are missing: ' + ', '.join(sorted(missing)))
@@ -135,6 +138,7 @@ def audit_binary(path, runner=run_tool):
         return {'schema': 1, 'kind': 'ios9-passive-helper-binary-audit',
                 'binary_file': path.name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest(),
                 'architecture': 'armv7', **cpu, **loaded, 'imports': names,
+                'linker_imports': sorted(set(names) & OPTIONAL_LINKER_IMPORTS),
                 'scope': 'Static CPU, minimum iOS, linked library and undefined import checks',
                 'helper_execution_performed': False}
     finally:

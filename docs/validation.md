@@ -11,8 +11,8 @@ repository.
 | Imported baseline | 33 Swift tests passed before new code was added |
 | Current Swift suite | 40 tests passed on macOS with Swift 6.4 and Linux ARM64 with Swift 6.0.3 |
 | Image lab unit suite | 20 Python tests passed on the Mac |
-| Passive-helper audit | 12 tests passed, including an altered Mach-O with an active-I/O import that was refused |
-| Native helper | ARMv7, minimum iOS 9.0, two system libraries and the reviewed 13 imports |
+| Passive-helper audit | 13 tests passed, including an altered Mach-O with an active-I/O import that was refused |
+| Native helper | ARMv7, minimum iOS 9.0, two system libraries and 13 required imports; legacy linkers may add the reviewed lazy binder |
 | Original source | Preserved copy and original working source matched before import; original files remain unchanged |
 
 Linux Swift checks used the official `swift:6.0.3-jammy` multi-architecture

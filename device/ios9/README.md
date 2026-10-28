@@ -16,7 +16,10 @@ python3 -m unittest discover -s device/ios9 -v
 The build uses explicit interface-only link stubs for the old ARMv7 system
 libraries. `audit.py` checks the resulting thin Mach-O CPU/subtype, iOS 9.0
 minimum, reviewed library pair and exact 13-name import set. A changed import
-set requires review. The audit inspects the file without executing it.
+set requires review. Legacy linkers can add the separately allowed
+`dyld_stub_binder` runtime symbol for [lazy binding](https://github.com/llvm/llvm-project/blob/main/lld/MachO/SyntheticSections.cpp).
+The audit inspects the
+file without executing it.
 
 The helper requires signing for the owner's jailbroken device. Sign a separate
 copy and use the owner's trusted, device-pinned SSH transport. Keep connection

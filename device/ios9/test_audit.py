@@ -75,6 +75,14 @@ class BinaryAudit(unittest.TestCase):
             with self.assertRaises(audit.AuditError):
                 audit.imports(output)
 
+    def test_only_the_reviewed_lazy_binder_is_optional(self):
+        self.assertEqual(set(audit.imports(IMPORTS + 'dyld_stub_binder\n')),
+                         audit.EXPECTED_IMPORTS | {'dyld_stub_binder'})
+        for suffix in ['dyld_stub_binder\ndyld_stub_binder\n',
+                       'dyld_other_helper\n', '_dlopen\n']:
+            with self.subTest(suffix=suffix), self.assertRaises(audit.AuditError):
+                audit.imports(IMPORTS + suffix)
+
     def test_macos_newer_ios_or_duplicate_platform_commands_fail(self):
         variants = [LOADS.replace('LC_VERSION_MIN_IPHONEOS', 'LC_VERSION_MIN_MACOSX'),
                     LOADS.replace('version 9.0', 'version 16.0'),
@@ -122,7 +130,8 @@ class BinaryAudit(unittest.TestCase):
         result = audit.audit_binary(helper)
         self.assertEqual(result['cpu_type'], 12)
         self.assertEqual(result['cpu_subtype'], 9)
-        self.assertEqual(len(result['imports']), 13)
+        self.assertEqual(set(result['imports']) - audit.OPTIONAL_LINKER_IMPORTS,
+                         audit.EXPECTED_IMPORTS)
 
     @unittest.skipUnless(Path('/usr/bin/xcrun').exists(), 'requires installed Xcode tools')
     def test_actual_macho_with_an_active_import_name_fails(self):
