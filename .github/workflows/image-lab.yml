@@ -14,8 +14,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Qualify clean shrink and checkpoint restores
-        run: python lab/qualify_macos.py --output "$RUNNER_TEMP/resize-hfs-lab"
+      - name: Qualify shrink, growth and checkpoint restores
+        run: python lab/qualify_macos.py --grow-back --output "$RUNNER_TEMP/resize-hfs-lab"
       - uses: actions/upload-artifact@v4
         with:
           name: hfsx-image-summary

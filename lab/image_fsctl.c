@@ -22,8 +22,8 @@ int main(void) { fputs("The image helper requires macOS.\n", stderr); return 2; 
 
 #define MEDIA_BYTES UINT64_C(201326592)
 #define TARGET_BYTES UINT64_C(100663296)
-#define HFS_SHRINK _IOW('h', 2, uint64_t)
-_Static_assert(HFS_SHRINK == 0x80086802U, "Unexpected HFS fsctl ABI");
+#define HFS_RESIZE _IOW('h', 2, uint64_t)
+_Static_assert(HFS_RESIZE == 0x80086802U, "Unexpected HFS fsctl ABI");
 
 static void refuse(const char *message)
 {
@@ -123,9 +123,10 @@ static void regular(const char *path, const struct stat *expected, uint64_t uid)
 
 int main(int argc, char **argv)
 {
-    if (argc != 3 || (strcmp(argv[1], "probe") && strcmp(argv[1], "shrink")))
-        refuse("use probe or shrink with a lab-generated plist");
+    if (argc != 3 || (strcmp(argv[1], "probe") && strcmp(argv[1], "shrink") && strcmp(argv[1], "grow")))
+        refuse("use probe, shrink or grow with a lab-generated plist");
     bool shrink = strcmp(argv[1], "shrink") == 0;
+    bool grow = strcmp(argv[1], "grow") == 0;
     char plist_path[PATH_MAX], image[PATH_MAX], mount[PATH_MAX], device[64];
     char token[128], volume[128], canonical[PATH_MAX];
     struct stat manifest_stat, image_stat;
@@ -153,6 +154,8 @@ int main(int argc, char **argv)
         number(field(manifest, "media_bytes")) != MEDIA_BYTES ||
         number(field(manifest, "target_bytes")) != TARGET_BYTES || strlen(token) != 36)
         refuse("unexpected experiment identity or size");
+    if (grow && number(field(manifest, "grow_target_bytes")) != MEDIA_BYTES)
+        refuse("grow target must equal the original image size");
     if (!realpath(image, canonical) || strcmp(image, canonical) ||
         !realpath(mount, canonical) || strcmp(mount, canonical))
         refuse("image or mount path is aliased");
@@ -161,8 +164,8 @@ int main(int argc, char **argv)
     if (strncmp(image, plist_path, parent_len) || strncmp(mount, plist_path, parent_len) ||
         strchr(image + parent_len, '/') || strchr(mount + parent_len, '/'))
         refuse("image and mount must be direct children of the lab directory");
-    if (shrink && (strcmp(image + parent_len, "fixture.dmg") || read_only))
-        refuse("shrink accepts the fresh writable fixture only");
+    if ((shrink || grow) && (strcmp(image + parent_len, "fixture.dmg") || read_only))
+        refuse("resize accepts the fresh writable fixture only");
     if (lstat(image, &image_stat) || !S_ISREG(image_stat.st_mode) ||
         number(field(manifest, "image_inode")) != (uint64_t)image_stat.st_ino ||
         number(field(manifest, "image_device")) != (uint64_t)image_stat.st_dev ||
@@ -217,12 +220,13 @@ int main(int argc, char **argv)
         refuse("fixture token differs");
     close(marker);
     regular(image, &image_stat, uid);
-    if (shrink) {
-        if ((uint64_t)fs.f_blocks * fs.f_bsize != MEDIA_BYTES)
-            refuse("fixture has already been resized");
-        uint64_t target = TARGET_BYTES;
+    if (shrink || grow) {
+        uint64_t expected = grow ? TARGET_BYTES : MEDIA_BYTES;
+        if ((uint64_t)fs.f_blocks * fs.f_bsize != expected)
+            refuse("fixture size differs from the operation's required starting size");
+        uint64_t target = grow ? MEDIA_BYTES : TARGET_BYTES;
         errno = 0;
-        int result = ffsctl(dir, HFS_SHRINK, &target, 0), error = errno;
+        int result = ffsctl(dir, HFS_RESIZE, &target, 0), error = errno;
         printf("{\"fsctl_return\":%d,\"errno\":%d}\n", result, error);
         close(dir);
         return result ? 1 : 0;

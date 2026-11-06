@@ -12,7 +12,23 @@ primary header and entry-array windows, then commits the proposal on later
 partition I/O. A read within the first partition reaches that commit path.
 An ordinary writable open requires descendant storage drivers to close.
 Normal iOS keeps System and Data mounted. A recovery image with a RAM root
-is being qualified for further native work.
+has now booted with both volumes unmounted. Its signed status check confirmed
+only the RAM root and devfs mounted. Raw device opens from this image returned
+`EPERM` for the whole medium, LwVM media, System and Data. The attempted
+device-policy sysctl change was denied and left the setting at its original
+value. A later kernel candidate masked the vnode bit from two newly applied
+process flags, then booted with the same RAM-root mount set. Read-only opens
+of both raw and block nodes still returned `EPERM`, before any device read.
+The same raw-open flags succeeded for all four nodes in normal iOS after the
+recovery reboot. System and Data had different BSD minor numbers between the
+two boots, so later access checks must verify the media identity directly.
+Boot12 located the refusal in the exact MAC vnode-open wrapper. Boot13's
+scoped read-only rule then admitted all four raw nodes and completed a
+bounded snapshot with System and Data unmounted. Both physical LwVM headers
+and the four virtual GPT metadata blocks matched the earlier iOS capture.
+The later reset log reports a watchdog fault. Physical update work requires
+a recovery session that stays running, followed by writer-open qualification
+and the key-store and discard controls described below.
 
 The observed medium has 4,096-byte preferred blocks and a 64 MiB chunk.
 The physical headers sit at byte 0 and byte 67,104,768. The native pair writer
@@ -117,8 +133,8 @@ already-free chunks, totaling 402,653,184 bytes. Pair-write failure has the
 separate first-chunk cleanup described above. The checked caller shows no
 rollback of an earlier key-store update after a later pair failure.
 
-The complete GPT conversion and key-store path still needs an executable
-fault model. Native qualification first needs a verified RAM root with
+The full GPT conversion and key-store path is exercised in the saved-code
+replay below. Native qualification first needs a verified RAM root with
 closed System/Data descendants, followed by a bounded writer open and
 close with fresh metadata checks. The physical metadata writer remains
 unimplemented while that work proceeds.
@@ -195,3 +211,63 @@ This result adds a provider-array failure case to the physical update plan.
 The writer needs a complete account of that array and the key-store state
 before its first device mutation. Native writable-open admission and child
 rematching remain separate runtime tests.
+
+## Host replay of scoped discard changes
+
+A further private host replay changed the saved ARMv7 instructions only in
+its emulator. One candidate supplies extent count one at `0x80c4d74e`, which
+matches the single initialized entry. Under the proposed 40 GiB Data map,
+that candidate reaches the provider with a discard of 18,186,502,144 bytes
+starting at byte 45,768,245,248. Both injected header-write errors still
+request discard of the first 67,108,864 bytes, including the physical
+header pair.
+
+The second candidate skips the pair writer's discard call at `0x80c48a28`
+and the post-map call at `0x80c4d78a`. Twelve complete replays covered both
+candidates on the unchanged and proposed maps, with success, primary-write
+error and backup-write error. Corresponding runs returned the same status,
+manager header, provider header bytes, map result and key-store-call result.
+The skip candidate reached no provider discard sink. Both proposed success
+cases produced the expected map and a 17,752,043,520-byte Linux partition.
+An injected backup-write error left the two headers different in both
+candidates. The synthetic key store had accepted its envelope before either
+injected header-write error.
+
+The two-call skip is the saved-code candidate for a later device test. Native
+discard effects, durable key-store state, interruption recovery and actual
+header writes remain unqualified. No physical partition update occurred in
+this replay.
+
+## Host replay with retained-key store bypass
+
+The saved key-store routine accepts the retained partition key, encrypts an
+80-byte envelope, then calls the effaceable store before the header pair.
+A further host-only candidate replaces that one store call with a successful
+return. It combines this four-byte change with the two discard-call skips.
+The candidate applies only to the measured proposal that keeps the existing
+encrypted partition identities and key bytes.
+
+Six saved-code replays covered unchanged and proposed maps with success,
+primary-write failure and backup-write failure. Compared with the prior
+discard-skip runs, each returned the same status, active header, provider
+header bytes and number of provider writes. The effaceable-store mock received
+no call. Four additional early-failure cases, each run with and without the
+store bypass, stopped on a missing key, size error, short capacity or AES
+error before any provider write. The proposed backup-write error still left
+the two headers different.
+
+This replay uses synthetic keys and mocked storage. A native check must prove
+that the existing key store already contains the retained keys and that the
+new Linux partition needs no key entry. The header-pair failure path and
+interruption recovery still need device qualification. The physical key store
+and provider received no request from these host replays.
+
+## Native plain writer-open lifecycle
+
+Boot15 completed a supervised plain `O_RDWR` open and close of the LwVM raw
+container with System and Data unmounted. Descendant partitions were recreated
+and all ten sampled metadata areas matched their preimages. The child exited
+zero and was reaped. The device numbers of System and Data can exchange during
+recreation; bind them through their typed registry identity and range before
+reopening them. This test made zero explicit device writes. The key-store,
+discard and header-pair update tests remain separate requirements.

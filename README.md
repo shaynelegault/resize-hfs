@@ -8,6 +8,9 @@ to OrchardLinux as its device support develops.
 The Swift commands inspect saved regular files. A separate macOS lab tests
 filesystem shrinking on newly created, disposable disk images. Work toward
 an iOS 9 resize helper is tracked in [the device roadmap](docs/ios9-roadmap.md).
+The product target is the size-selection, resize and verified partition-update
+workflow in OrchardLinux's Resize APFS. [The parity record](docs/resize-apfs-parity.md)
+maps that workflow to the HFS implementation and its remaining device tests.
 
 ## Saved-file inspection
 
@@ -60,12 +63,20 @@ The iPad's iOS 9 ABI and LwVM behavior need separate device qualification.
 
 See [the image lab](docs/image-lab.md) for the command and current results.
 Generated images and operation receipts stay outside Git.
+Its `--grow-back` option now tests a shrink from 192 MiB to 96 MiB followed
+by growth to 192 MiB, with separate verification and recovery checkpoints.
 
 ## Device scope
 
 The first research target is the original iPad mini Wi-Fi (`iPad2,5`, P105AP),
-running iOS 9.3.5 build 13G36 with HFSX and LwVM. Native on-device resizing,
-LwVM writes and recovery after an interrupted device operation remain open.
+running iOS 9.3.5 build 13G36 with HFSX and LwVM. Native disposable-image
+tests now cover shrinking and growing, with full sentinel checks and native
+filesystem checking. A native Data shrink to 40 GiB has now relocated four
+protected files and passed full content checks. A later RAM recovery boot
+passed forced read-only filesystem checking with System and Data unmounted.
+After returning to iOS, a fresh process verified all four protected files
+and the 40 GiB filesystem. Recovery after an interrupted physical operation
+remains open, alongside LwVM writes.
 A free-block count in an HFS header cannot determine a safe shrink target.
 
 The OrchardLinux P105 desktop currently runs from a host-served NFS root.
@@ -82,7 +93,8 @@ kernel captures, calibration, raw device data and credentials stay private.
 
 Native tests now record file-class access across passcode lock and unlock
 on iOS 9.3.5. [The results](docs/ios9-content-protection.md) state the
-measured scope and the remaining content-protected relocation work.
+measured scope, the completed physical relocation and the remaining tests
+for interrupted operations and relocation while passcode-locked.
 An original [LwVM recovery model](docs/lwvm-update-recovery.md) adds eighteen
 saved-file tests for the traced header-pair and chunk rules. A physical
 partition update still needs native recovery and provider qualification.
@@ -91,8 +103,36 @@ Native P105 [process-stop and restore checks](docs/ios9-process-stops.md)
 now cover exits before a resize request and after its successful return on
 disposable iOS HFSX images. Four protected files also passed measured
 placement beyond the proposed 40 GiB boundary and fresh-process verification.
-Their physical relocation and the LwVM commit path remain under qualification.
+A later native Data shrink moved all four below the boundary with their full
+content hashes and protection classes intact. The LwVM commit path remains
+under qualification.
 
 The P105 [key-store ordering fixture](docs/lwvm-update-recovery.md#key-store-ordering-fixture)
 adds twelve host tests for failures before header I/O and recovery after a
 key-store change. It uses invented keys with a declared crypto mock.
+
+A [P105 layout proposal](docs/p105-storage-proposal.md) passed saved-code
+conversion into a 40 GiB Data partition and a 17.75 GB Linux range, with
+independent header/map checks and nine host fault cases. Physical allocation
+remains under qualification.
+
+The [P105 NAND study](docs/p105-nand-storage.md) records the 64 GB device's
+reported geometry and the imported read-only driver's row-address mismatch.
+Its saved-file inspector checks row boundaries across the reported CAUs.
+
+The [RAM recovery checks](docs/validation.md#p105-ram-recovery-and-raw-device-admission)
+now include a bounded storage snapshot with System and Data unmounted.
+Boot13's scoped kernel rule admitted read-only opens of all four raw nodes.
+The helper checked both physical LwVM headers and repeated the virtual GPT
+and HFS reads; the six partition-metadata blocks matched the earlier iOS
+capture. After boot15, one native request shrank the Data filesystem from
+60,701,716,480 bytes to 42,949,672,960 bytes. Its partition retains the larger
+size. Independent reads confirmed the new filesystem geometry and unchanged
+LwVM headers. [The physical test](docs/validation.md#p105-physical-data-shrink)
+records its scope and remaining checks. Boot14 verified
+the watchdog disabled and kept USB/SSH access through 24 minutes of RAM
+recovery. Its supervised writer-open control completed one permission
+refusal, with a reaped child and unchanged sampled metadata. Boot15 then
+completed one accepted writer open and close, verified the recreated
+partitions and exported matching pre/post metadata. Physical resize and
+partition-update recovery remain under qualification.

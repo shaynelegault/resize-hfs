@@ -55,5 +55,7 @@ hashes throughout restoration.
 
 These cases stop a user process at completed operation boundaries. The
 kernel remains running throughout. Their records retain
-`kernel_power_loss_tested=false`. Physical Data shrinking and LwVM changes
-require their own qualification.
+`kernel_power_loss_tested=false`. Recovery after an interrupted physical
+Data resize and LwVM changes require their own qualification. A completed
+[physical Data shrink](validation.md#p105-physical-data-shrink) has separately
+passed unmounted checking and a later normal-iOS protected-file check.

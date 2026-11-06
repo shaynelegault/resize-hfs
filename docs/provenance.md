@@ -73,3 +73,13 @@ uses fixed invented identities, keys and prefixes. Its AES operation is
 an identity mock. The separate header model supplies regular-file failure
 and restoration cases; firmware bytes and native key material remain
 outside this source tree.
+
+## NAND geometry and translation references
+
+The original MIT `lab/nand_geometry.py` inspector checks saved iOS registry
+properties and derives row boundaries. The imported OrchardLinux H2FMI driver
+is a GPL-2.0-only reference for its hardcoded geometry and read-only command
+set. Project Cascadia's [read-only `iosnand` implementation](https://github.com/rzxvx/Project-Cascadia/blob/c20b85ebb951c704d7e3a664c378dde8276e3928/tools/nand/iosnand.c)
+documents a metadata-based logical mapping on an earlier 16 GB P105 unit.
+Its code remains outside this repository. The [P105 NAND note](p105-nand-storage.md)
+records what must be checked on the 64 GB unit.

@@ -126,7 +126,8 @@ def receipt(root, attachment, token):
             'mount': str(attachment.mount), 'device': attachment.device,
             'token': token, 'volume_name': attachment.volume_name, 'owner_uid': os.getuid(),
             'image_inode': before.st_ino, 'image_device': before.st_dev, 'image_bytes': before.st_size,
-            'media_bytes': MEDIA, 'target_bytes': TARGET, 'read_only': attachment.read_only}
+            'media_bytes': MEDIA, 'target_bytes': TARGET, 'grow_target_bytes': MEDIA,
+            'read_only': attachment.read_only}
     path = root / ('lab-' + uuid.uuid4().hex + '.plist')
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
     with os.fdopen(fd, 'wb') as stream:
@@ -181,19 +182,22 @@ def header_geometry(path):
         os.close(fd)
 
 
-def guards(helper, root, record, data):
+def guards(helper, root, record, data, *, action='shrink', expected=MEDIA):
     refused = []
-    for field, value in [('device', '/dev/disk0'), ('image_inode', data['image_inode'] + 1),
-                         ('target_bytes', TARGET + 4096)]:
+    cases = [('device', '/dev/disk0'), ('image_inode', data['image_inode'] + 1),
+             ('target_bytes', TARGET + 4096)]
+    if action == 'grow':
+        cases.append(('grow_target_bytes', MEDIA + 4096))
+    for field, value in cases:
         changed = {**data, field: value}
-        path = root / ('refused-' + field + '.plist')
+        path = root / ('refused-' + action + '-' + field + '.plist')
         path.write_bytes(plistlib.dumps(changed))
         path.chmod(0o600)
-        result = subprocess.run([str(helper), 'shrink', str(path)], capture_output=True, env=ENV, timeout=30)
+        result = subprocess.run([str(helper), action, str(path)], capture_output=True, env=ENV, timeout=30)
         require(result.returncode == 2 and b'Image operation refused:' in result.stderr,
                 'Native helper accepted mismatched evidence')
         refused.append(field)
-    require(native(helper, 'probe', record)['volume_bytes'] == MEDIA,
+    require(native(helper, 'probe', record)['volume_bytes'] == expected,
             'Refusal tests changed the filesystem size')
     return refused
 
@@ -211,7 +215,7 @@ def verify_readonly(helper, root, image, token, volume_name, expected, late_dige
         require('appears to be OK' in output and 'File system check exit code is 0' in output and
                 'skipp' not in output.lower() and 'warning' not in output.lower(),
                 'Filesystem check did not complete cleanly')
-        (root / ('verify-' + image.stem + '.log')).write_text(output)
+        (root / ('verify-' + image.stem + '-' + str(expected) + '.log')).write_text(output)
     require(digest_saved(image) == before, 'Read-only verification changed the image bytes')
     return evidence
 
@@ -220,8 +224,13 @@ class Stopped(Exception):
     pass
 
 
-def experiment(output, stop_after=None):
+def experiment(output, stop_after=None, *, grow_back=False):
     require(platform.system() == 'Darwin', 'The disposable HFS image lab requires macOS')
+    require(type(grow_back) is bool, 'Grow-back choice must be explicit')
+    require(stop_after in (None, 'backup-verified', 'shrink-requested', 'shrink-returned',
+                           'grow-requested', 'grow-returned'), 'Unknown stop checkpoint')
+    require(grow_back or stop_after not in ('grow-requested', 'grow-returned'),
+            'Growth checkpoints require --grow-back')
     root = new_directory(output)
     token = str(uuid.uuid4())
     volume = 'RHFS-Lab-' + token[:8]
@@ -233,7 +242,7 @@ def experiment(output, stop_after=None):
         if state == stop_after:
             raise Stopped(state)
     try:
-        checkpoint('created', media_bytes=MEDIA, target_bytes=TARGET)
+        checkpoint('created', media_bytes=MEDIA, target_bytes=TARGET, grow_back=grow_back)
         image = root / 'fixture.dmg'
         run(['/usr/bin/hdiutil', 'create', '-size', '192m', '-layout', 'NONE',
              '-fs', 'Case-sensitive Journaled HFS+', '-volname', volume, '-type', 'UDIF', image])
@@ -271,11 +280,31 @@ def experiment(output, stop_after=None):
             require(digest_saved(attached.mount / 'late.bin') == late_digest, 'File changed during relocation')
         checked = verify_readonly(helper, root, image, token, volume, TARGET, late_digest)
         checkpoint('verified', new_extents=checked, image=digest_saved(image))
+        grow_rejected = []
+        if grow_back:
+            with Attachment(image, root / 'grow-mount', False, volume) as attached:
+                record, data = receipt(root, attached, token)
+                grow_rejected = guards(helper, root, record, data, action='grow', expected=TARGET)
+                checkpoint('grow-requested', from_bytes=TARGET, target_bytes=MEDIA,
+                           refused_evidence=grow_rejected)
+                grown = native(helper, 'grow', record)
+                require(grown == {'fsctl_return': 0, 'errno': 0}, 'HFS growth returned an error')
+                checkpoint('grow-returned', result=grown)
+                after = native(helper, 'probe', record)
+                require(after['volume_bytes'] == MEDIA and after['media_bytes'] == MEDIA,
+                        'Grown filesystem or backing size differs')
+                require(digest_saved(attached.mount / 'late.bin') == late_digest,
+                        'File changed during growth')
+            checked = verify_readonly(helper, root, image, token, volume, MEDIA, late_digest)
+            checkpoint('grow-verified', new_extents=checked, image=digest_saved(image))
         result = {'schema': 1, 'kind': 'macos-hfsx-image-experiment', 'operation': token,
-                  'media_bytes': MEDIA, 'filesystem_before': MEDIA, 'filesystem_after': TARGET,
+                  'media_bytes': MEDIA, 'filesystem_before': MEDIA,
+                  'filesystem_after_shrink': TARGET,
+                  'filesystem_after': MEDIA if grow_back else TARGET, 'grow_back_verified': grow_back,
                   'late_file_unchanged': True, 'extent_relocation_verified': True,
                   'readonly_filesystem_check': 'passed', 'readonly_image_hash_unchanged': True,
-                  'native_guard_refusals': rejected, 'on_device_qualified': False}
+                  'native_guard_refusals': rejected, 'native_grow_guard_refusals': grow_rejected,
+                  'on_device_qualified': False}
         new_json(root / 'result.json', result)
         return result
     finally:
@@ -314,13 +343,17 @@ def main():
     commands = parser.add_subparsers(dest='command', required=True)
     execute = commands.add_parser('run', help='create a new disposable image and shrink its HFSX filesystem')
     execute.add_argument('--output', required=True, type=Path)
-    execute.add_argument('--stop-after', choices=['backup-verified', 'shrink-requested', 'shrink-returned'])
+    execute.add_argument('--grow-back', action='store_true',
+                         help='after verified shrinking, grow the fixture back to its original size')
+    execute.add_argument('--stop-after', choices=['backup-verified', 'shrink-requested', 'shrink-returned',
+                                                 'grow-requested', 'grow-returned'])
     recovery = commands.add_parser('restore', help='verify a backup by restoring to a fresh image file')
     recovery.add_argument('--run-dir', required=True, type=Path)
     recovery.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     try:
-        result = experiment(args.output, args.stop_after) if args.command == 'run' else restore(args.run_dir, args.output)
+        result = (experiment(args.output, args.stop_after, grow_back=args.grow_back)
+                  if args.command == 'run' else restore(args.run_dir, args.output))
         print(json.dumps(result, indent=2))
     except Stopped as stopped:
         print('Stopped at durable checkpoint: ' + str(stopped), file=sys.stderr)

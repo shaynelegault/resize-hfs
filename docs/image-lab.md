@@ -13,6 +13,8 @@ python3 lab/image_lab.py run --output /private/tmp/resize-hfs-example
 python3 lab/image_lab.py restore \
   --run-dir /private/tmp/resize-hfs-example \
   --output /private/tmp/resize-hfs-restored
+python3 lab/image_lab.py run --grow-back \
+  --output /private/tmp/resize-hfs-shrink-grow
 ```
 
 Choose output paths that do not exist. Keep the output directories while
@@ -33,6 +35,12 @@ directory descriptor binds its `ffsctl` call to that checked filesystem.
 Physical media, partitions, a changed mount and mismatched image evidence
 are refused by these checks. The fixed experiment shrinks only `fixture.dmg`.
 
+With `--grow-back`, the lab first completes the shrink and its read-only
+verification. It then mounts the same fixture writable, checks its 96 MiB
+filesystem and requests 192 MiB through the same resize interface. The
+helper requires a grow target equal to the original medium size. Its
+starting-size check rejects a second successful grow request.
+
 The host's `IOKitSize` records backing-medium size. `VolumeSize` and `TotalSize`
 report the reduced filesystem after a shrink on the tested host. The lab uses
 the backing field and the image's block count for its media check, then reads
@@ -44,6 +52,8 @@ image read-only, checks both HFS header geometries, verifies the sentinel and
 runs `diskutil verifyVolume`. Verification must perform the filesystem checks
 and report success. The backing image's hash must remain unchanged throughout
 that read-only session.
+The grow-back path repeats those checks at 192 MiB. Each size retains its
+own filesystem-check log, and the original backup remains unchanged.
 
 The restore command validates the original backup's hash against a durable
 checkpoint and copies it into a fresh image. It then repeats read-only mount,
@@ -65,6 +75,16 @@ python3 lab/image_lab.py restore \
 journal line contains its sequence and previous-record hash. Recovery can
 use the complete prefix of a torn final record and requires an already
 verified backup. The original mutation is never replayed.
+
+With `--grow-back`, `--stop-after` also accepts `grow-requested` and
+`grow-returned`. A growth request follows a durable `verified` shrink record.
+The restore command uses the original 192 MiB backup at either growth stop.
+Run all six clean and stop/restore cases with:
+
+```sh
+python3 lab/qualify_macos.py --grow-back \
+  --output /private/tmp/resize-hfs-growth-qualification
+```
 
 These stops exercise the supervisor's checkpoints. They leave kernel-level
 power loss during `ffsctl` and real iOS/LwVM recovery for later tests.

@@ -9,7 +9,8 @@ import stat
 from .saved_files import identity, sync_directory
 
 ORDER = ('created', 'image-created', 'seeded', 'backup-verified',
-         'shrink-requested', 'shrink-returned', 'verified')
+         'shrink-requested', 'shrink-returned', 'verified',
+         'grow-requested', 'grow-returned', 'grow-verified')
 
 
 def canonical(value):

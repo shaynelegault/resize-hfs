@@ -148,6 +148,32 @@ class Checkpoints(unittest.TestCase):
             Journal(self.path, 'another-operation')
         self.assertEqual(self.path.read_bytes(), before)
 
+    def test_growth_requires_the_completed_shrink_verification(self):
+        journal = Journal(self.path, 'synthetic-operation')
+        try:
+            for state in ORDER[:6]:
+                journal.checkpoint(state)
+            before = self.path.read_bytes()
+            with self.assertRaises(ValueError):
+                journal.checkpoint('grow-requested')
+            self.assertEqual(self.path.read_bytes(), before)
+            journal.checkpoint('verified')
+            journal.checkpoint('grow-requested', target_bytes=image_lab.MEDIA)
+        finally:
+            journal.close()
+        self.assertEqual(read_journal(self.path)[-1]['state'], 'grow-requested')
+
+    def test_original_shrink_only_journal_remains_readable(self):
+        self.write(ORDER[:7])
+        self.assertEqual(read_journal(self.path)[-1]['state'], 'verified')
+
+    def test_growth_stop_without_growth_is_refused_before_creating_output(self):
+        for stage in ('grow-requested', 'grow-returned'):
+            with self.subTest(stage=stage), patch('lab.image_lab.platform.system', return_value='Darwin'), \
+                    self.assertRaises(ValueError):
+                image_lab.experiment(self.root / 'unused', stop_after=stage)
+            self.assertFalse((self.root / 'unused').exists())
+
     def test_restore_requires_a_durable_verified_backup_before_creating_output(self):
         self.write(ORDER[:3])
         with patch('lab.image_lab.platform.system', return_value='Darwin'), self.assertRaises(ValueError):
@@ -251,6 +277,41 @@ class NativeFailureEvidence(unittest.TestCase):
         self.assertEqual(evidence['outcome'], 'unknown after timeout')
         self.assertEqual(evidence['stdout'], 'synthetic partial output')
         self.assertEqual(read_journal(self.root / 'journal.jsonl')[-1]['state'], 'shrink-requested')
+
+
+class GrowthFailureEvidence(NativeFailureEvidence):
+    def setUp(self):
+        super().setUp()
+        # Use a separate new operation to model a host restart after growth intent.
+        self.root = self.root / 'growth'
+        self.root.mkdir()
+        journal = Journal(self.root / 'journal.jsonl', 'synthetic-growth-operation')
+        for state in ORDER[:8]:
+            journal.checkpoint(state)
+        journal.close()
+
+    def test_resize_errno_and_streams_survive_failure_without_replay(self):
+        process = subprocess.CompletedProcess(['synthetic-helper'], 1,
+                    b'{"fsctl_return":-1,"errno":5}\n', b'growth failed')
+        before = (self.root / 'journal.jsonl').read_bytes()
+        with patch('lab.image_lab.subprocess.run', return_value=process) as invoked, self.assertRaises(RuntimeError):
+            image_lab.native(Path('/synthetic/helper'), 'grow', self.root / 'lab.plist')
+        self.assertEqual(invoked.call_count, 1)
+        evidence = json.loads(next(self.root.glob('native-grow-*.json')).read_text())
+        self.assertEqual(json.loads(evidence['stdout'])['errno'], 5)
+        self.assertEqual(evidence['stderr'], 'growth failed')
+        self.assertEqual((self.root / 'journal.jsonl').read_bytes(), before)
+        self.assertEqual(read_journal(self.root / 'journal.jsonl')[-1]['state'], 'grow-requested')
+
+    def test_timeout_retains_partial_output_and_an_unresolved_checkpoint(self):
+        timeout = subprocess.TimeoutExpired(['synthetic-helper'], 180, output=b'growth result lost')
+        with patch('lab.image_lab.subprocess.run', side_effect=timeout) as invoked, self.assertRaises(RuntimeError):
+            image_lab.native(Path('/synthetic/helper'), 'grow', self.root / 'lab.plist')
+        self.assertEqual(invoked.call_count, 1)
+        evidence = json.loads(next(self.root.glob('native-grow-*.json')).read_text())
+        self.assertIsNone(evidence['returncode'])
+        self.assertEqual(evidence['stdout'], 'growth result lost')
+        self.assertEqual(read_journal(self.root / 'journal.jsonl')[-1]['state'], 'grow-requested')
 
 
 if __name__ == '__main__':
